@@ -20,37 +20,82 @@ font_medium = pygame.font.SysFont("Verdana", 30)
 
 def get_level_settings(level):
     if level == 1:
-        return {'fps': 5, 'walls': []}
+        return {'fps': 7, 'walls': []}
     elif level == 2:
         return {
-            'fps': 7,
+            'fps': 9,
             'walls': [
                 (0, 0, 10, HEIGHT), (WIDTH-10, 0, 10, HEIGHT),
                 (0, 0, WIDTH, 10), (0, HEIGHT-10, WIDTH, 10)
             ]
         }
-    else:
+    elif level == 3:
         return {
-            'fps': 9,
+            'fps': 11,
             'walls': [
                 (0, 0, 10, HEIGHT), (WIDTH-10, 0, 10, HEIGHT),
                 (0, 0, WIDTH, 10), (0, HEIGHT-10, WIDTH, 10),
                 (WIDTH//2-10, HEIGHT//4, 20, HEIGHT//2)
             ]
         }
+    elif level == 4:
+        return {
+            'fps': 13,
+            'walls': [
+                (0, 0, 10, HEIGHT), (WIDTH-10, 0, 10, HEIGHT),
+                (0, 0, WIDTH, 10), (0, HEIGHT-10, WIDTH, 10),
+                (WIDTH//2-10, HEIGHT//4, 20, HEIGHT//2),
+                (40, 40, 100, 100), (WIDTH - 140, 40, 100, 100),
+                (40, HEIGHT - 140, 100, 100), (WIDTH - 140, HEIGHT - 140, 100, 100)
+            ]
+        }
+    else:
+        return {
+            'fps': 15,
+            'walls': [
+                (0, 0, 10, HEIGHT), (WIDTH-10, 0, 10, HEIGHT),
+                (0, 0, WIDTH, 10), (0, HEIGHT-10, WIDTH, 10),
+                (WIDTH // 2 - 10, HEIGHT//4 - 5, 20, HEIGHT // 2),
+                (40, 40, 100, 100), (WIDTH - 140, 40, 100, 100),
+                (40, HEIGHT - 140, 100, 100), (WIDTH - 140, HEIGHT - 140, 100, 100),
+                (200, 60, 300, 70), (200, HEIGHT - 110, 300, 70),
+                (100, 200, 150, 300), (WIDTH - 250, 200, 150, 300)
+            ]
+        }
 
-def game_over(score, level):
+def game_over_death(score, level, user_id, snake, fruit, dir):
+    surface = pygame.Surface((400, 250))
+    surface.fill((255, 255, 255))
     game_over_text = font_large.render("GAME OVER", True, BLACK)
+    screen.blit(surface, (150, HEIGHT // 2 - game_over_text.get_height()))
     screen.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2 - game_over_text.get_height() // 2))
     end1_text = font_medium.render("Your score is: " + str(score), True, BLACK)
     end2_text = font_medium.render("Your level is: " + str(level), True, BLACK)
     screen.blit(end1_text, (WIDTH // 2 - end1_text.get_width() // 2, HEIGHT // 2 + game_over_text.get_height() // 2 + 20))
     screen.blit(end2_text,
                 (WIDTH // 2 - end2_text.get_width() // 2, HEIGHT // 2 + game_over_text.get_height() // 2 + end1_text.get_height() + 40))
+    score = 0
+    save_game_state(user_id, level, score, snake, fruit, dir)
     pygame.display.update()
     pygame.time.delay(5000)
     
-def win(screen):
+def game_over_exit(score, level, user_id, snake, fruit, dir):
+    game_over_text = font_large.render("GAME OVER", True, BLACK)
+    screen.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2 - game_over_text.get_height() // 2))
+    end1_text = font_medium.render("Your score is: " + str(score), True, BLACK)
+    end2_text = font_medium.render("Your level is: " + str(level), True, BLACK)
+    sg_text = font_medium.render("Your game saved", True, BLACK)
+    screen.blit(end1_text, (WIDTH // 2 - end1_text.get_width() // 2, HEIGHT // 2 + game_over_text.get_height() // 2 + 20))
+    screen.blit(end2_text,
+                (WIDTH // 2 - end2_text.get_width() // 2, HEIGHT // 2 + game_over_text.get_height() // 2 + end1_text.get_height() + 40))
+    screen.blit(sg_text, 
+                (WIDTH // 2 - sg_text.get_width() // 2, HEIGHT // 2 + game_over_text.get_height() // 2 + end1_text.get_height() + end2_text.get_height() + 40))
+    save_game_state(user_id, level, score, snake, fruit, dir)
+    pygame.display.update()
+    pygame.time.delay(5000)
+    
+def win(screen, user_id, level, score, snake, fruit, dir):
+    save_game_state(user_id, level, score, snake, fruit, dir)
     screen.fill((255, 255, 255))
     win_text = font_large.render("YOU WON!!!", True, BLACK)
     screen.blit(win_text, (WIDTH // 2 - win_text.get_width() // 2, HEIGHT // 2 - win_text.get_height() // 2))
@@ -114,11 +159,14 @@ running = True
 TIMER_START = 10
 time_left = TIMER_START
 last_tick = pygame.time.get_ticks()
+go = False
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            game_over_exit(score, level, user_id, snake, fruit, dir)
             running = False
+            pygame.quit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
                 new_dir = "down"
@@ -208,8 +256,8 @@ while running:
 
     score_text = font.render("Score: " + str(score), True, BLACK)
     level_text = font.render("Level: " + str(level), True, BLACK)
-    screen.blit(score_text, (WIDTH - score_text.get_width() - 10, 10))
-    screen.blit(level_text, (WIDTH - level_text.get_width() - 10, score_text.get_height() + 10))
+    screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 10))
+    screen.blit(level_text, (WIDTH // 2 - level_text.get_width() // 2, score_text.get_height() + 10))
 
     if dir == "down":
         head[1] += 10
@@ -232,8 +280,8 @@ while running:
         last_tick = pygame.time.get_ticks()
         score += 1
         snake.insert(0, snake[0][:])
-        if score % 50 == 0 and level != 3:
-            level = min(level + 1, 3)
+        if score > 0 and score % 10 == 0 and level == 1:
+            level = min(level + 1, 5)
             FPS = get_level_settings(level)['fps']
             snake = [[20, 20], [30, 20], [40, 20]]
             initial_moves = -1
@@ -241,23 +289,53 @@ while running:
             head = snake[-1]
             dir = "right"
             new_dir = "right"
-    if score > 0 and score % 50 == 0 and level == 3:
-            win(screen)    
+        elif score > 0 and score % 20 == 0 and level == 2:
+            level = min(level + 1, 5)
+            FPS = get_level_settings(level)['fps']
+            snake = [[20, 20], [30, 20], [40, 20]]
+            initial_moves = -1
+            score = 0
+            head = snake[-1]
+            dir = "right"
+            new_dir = "right"
+        elif score > 0 and score % 30 == 0 and level == 3:
+            level = min(level + 1, 5)
+            FPS = get_level_settings(level)['fps']
+            snake = [[20, 20], [30, 20], [40, 20]]
+            initial_moves = -1
+            score = 0
+            head = snake[-1]
+            dir = "right"
+            new_dir = "right"
+        elif score > 0 and score % 40 == 0 and level == 4:
+            level = min(level + 1, 5)
+            FPS = get_level_settings(level)['fps']
+            snake = [[20, 20], [30, 20], [40, 20]]
+            initial_moves = -1
+            score = 0
+            head = snake[-1]
+            dir = "right"
+            new_dir = "right"
+    if score > 0 and score % 50 == 0 and level == 5:
+        win(screen, user_id, level, score, snake, fruit, dir)    
             
 
     head_check = snake[-1]
     if head_check[0] < 0 or head_check[0] >= WIDTH or head_check[1] < 0 or head_check[1] >= HEIGHT:
         running = False
+        go = True
 
     for wall in walls:
         wall_rect = pygame.Rect(wall[0], wall[1], wall[2], wall[3])
         if new_head_rect.colliderect(wall_rect):
             running = False
+            go = True
             break
 
     if initial_moves >= 2:
         for body in snake[:-1]:
             if body[0] == head_check[0] and body[1] == head_check[1]:
+                go = True
                 running = False
     else:
         initial_moves += 1
@@ -265,8 +343,8 @@ while running:
     pygame.display.flip()
     clock.tick(FPS)
 
-    if not running:
-        save_game_state(user_id, level, score, snake, fruit, dir)
-        game_over(score, level)
+    if not running and True:
+        snake = [[20, 20], [30, 20], [40, 20]]
+        game_over_death(score, level, user_id, snake, fruit, dir)
 
 pygame.quit()
