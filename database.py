@@ -4,7 +4,7 @@ import json
 db_params = {
     'dbname': 'snake_game',
     'user': 'postgres',
-    'password': 'reshetka3435684',
+    'password': '12345678',
     'host': 'localhost',
     'port': '5432'
 }
