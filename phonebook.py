@@ -5,7 +5,7 @@ from psycopg2 import sql
 db_params = {
     'dbname': 'phonebook',
     'user': 'postgres',
-    'password': 'reshetka3435684',
+    'password': '12345678',
     'host': 'localhost',
     'port': '5432'
 }
